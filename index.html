@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Places Finder</title>
+    <script>
+    </script>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/display.css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet" />
+    <style type="text/css">
+    body {
+        font-family: "Roboto", sans-serif;
+    }
+
+    </style>
+    <style>
+    /* Always set the map height explicitly to define the size of the div
+     * element that contains the map. */
+    #map {
+        height: 100%;
+        background-color: grey;
+    }
+
+    /* Optional: Makes the sample page fill the window. */
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .clearfix:before,
+    .clearfix:after {
+        display: table;
+        content: "";
+    }
+
+    .clearfix:after {
+        clear: both
+    }
+
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-container>
+            <el-header><h1 style="text-align:center">Location search</h2>
+            </el-header>
+            <el-main>
+                <el-row :gutter="10">
+                    <el-col :xs="12">
+                        <div class="grid-content ">
+                            <el-input placeholder="Please input" v-model="input" id="pac-input"></el-input>
+                            <div id="places_div"></div>
+                            <div style="padding:20px">
+                            <template v-if="searching.places">
+                                <el-skeleton :rows="6" animated v-if="searching.places" /></template>
+                            <template v-else-if="this.places">
+                                <h2>{{places.length}} Places within {{radius}} KMs  <a @click="csvExport"><i class="el-icon-download"></i></a>
+</h2>
+                                <el-card class="box-card" v-for="place in places" style="margin-bottom:20px">
+                                    <div class="el-card__header">
+                                        <div class="clearfix">
+                                        <h3  style="float:left"> {{place.name}}</h3>
+                                                                               <span style="float:right"> <img :src="place.icon" style="width: 32px;"/></span>
+
+                                    </div></div>
+                                        <div class="el-card__body">
+                                         
+                                         <template v-if="place.fetching">
+                                             <el-skeleton :rows="3" animated  />
+                                         </template>
+                                         <template v-else>
+                                             
+                                             <div  v-if="place.details"  class="text item">
+                                            <ul>
+                                                <li v-for="key,idx in Object.keys(place.details)" :key="idx">
+                                                    {{key}}: {{place.details[key]}}
+                                                </li>
+                                            </ul>
+                                        </div>
+                                         </template>
+                                         
+                                        <el-carousel :interval="4000" type="card" height="200px">
+      <el-carousel-item  v-for="(photo,index) in place.photos" :key="index" >
+        <img :src="photo.getUrl()" />
+      </el-carousel-item>
+    </el-carousel>
+                                     
+                                    </div>
+                                </el-card>
+                            </template>
+                            </div>
+                        </div>
+                    </el-col>
+                </el-row>
+            </el-main>
+            <el-footer></el-footer>
+        </el-container>
+    </div>
+    <script>
+    function initMap() {
+
+    }
+
+    </script>
+    <script src="https://unpkg.com/vue@3.0.0-rc.5/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/element-plus/lib/index.full.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
