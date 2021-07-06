@@ -41,7 +41,9 @@
     .clearfix:after {
         clear: both
     }
-
+ .grid-content {
+     min-height: 36px;
+}
     </style>
 </head>
 
@@ -54,7 +56,11 @@
                 <el-row :gutter="10">
                     <el-col :xs="12">
                         <div class="grid-content ">
-                            <el-input placeholder="Please input" v-model="input" id="pac-input"></el-input>
+                            <el-row :gutter="10"> <el-col :span="6"><div class="grid-content bg-purple"></div></el-col> <el-col :span="12">
+                            <el-card>                            <el-input placeholder="Please type a location" v-model="input" id="pac-input"></el-input>
+</el-card>
+</el-col><el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+</el-row>
                             <div id="places_div"></div>
                             <div style="padding:20px">
                             <template v-if="searching.places">
@@ -85,7 +91,7 @@
                                         </div>
                                          </template>
                                          
-                                        <el-carousel :interval="4000" type="card" height="200px">
+                                        <el-carousel :interval="4000" type="card" height="200px" trigger>
       <el-carousel-item  v-for="(photo,index) in place.photos" :key="index" >
         <img :src="photo.getUrl()" />
       </el-carousel-item>
