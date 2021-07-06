@@ -19,17 +19,30 @@ var Main = {
 			searchBox: null,
 			placesService: null,
 			searching: { places: false },
-			places: false,
-			radius: 150,
+			placeItems: false,
+			radius: 0.5,
 			place: null,
+			pages: 0,
 		};
 	},
 	watch: {
 		input() {
-			this.places = this.place = false;
+			this.placeItems = this.place = false;
 		},
 	},
-	computed: {},
+	computed: {
+		fetch_page() {
+			return "Getting Page " + this.pages;
+		},
+		fetched_details() {
+			const ret = (this.placeItems || []).filter((itm) => itm.fetched);
+			return ret ? ret.length : 0;
+		},
+		processed_all() {
+			const places = this.placeItems || [];
+			return this.fetched_details === places.length;
+		},
+	},
 	created() {},
 	async mounted() {
 		try {
@@ -72,6 +85,7 @@ var Main = {
 		},
 		placesChangedCallback() {
 			this.searching.places = true;
+			this.pages = 1;
 			var places = this.searchBox.getPlaces();
 			console.log(places);
 			this.place = places[0];
@@ -82,24 +96,39 @@ var Main = {
 				place.geometry.location.lat(),
 				place.geometry.location.lng()
 			);
+			this.placeItems = [];
 			this.placesService.nearbySearch(
 				{ radius: this.radius * 1000, location },
 				this.nearbyPlacesCallback
 			);
 		},
-		nearbyPlacesCallback(places) {
+		nearbyPlacesCallback(places, status, pagination) {
 			const vm = this;
-			this.searching.places = false;
-			this.places = [];
-			places.forEach((itm) => {
-				this.places.push({ ...itm, fetched: false, fetching: false });
-			});
+			if (places) {
+				places.forEach((itm) => {
+					const item = {
+						place_id: itm.place_id,
+						icon: itm.icon,
+						name: itm.name,
+						details: [],
+						fetched: false,
+						fetching: false,
+					};
+					this.placeItems.push(item);
+				});
+			}
 
-			this.fetchPlaceDetails();
+			if (pagination && pagination.hasNextPage) {
+				this.pages = this.pages + 1;
+				pagination.nextPage();
+			} else {
+				this.searching.places = false;
+				this.fetchPlaceDetails();
+			}
 		},
 		fetchPlaceDetails() {
 			const vm = this;
-			const places = vm.places;
+			const places = vm.placeItems;
 			const displayFields = {
 				name: "Name",
 				formatted_address: "Address",
@@ -107,12 +136,12 @@ var Main = {
 			};
 
 			const fields = ["place_id"].concat(Object.keys(displayFields));
-			const placeIdx = this.places.findIndex((itm) => !itm.fetched);
+			const placeIdx = this.placeItems.findIndex((itm) => !itm.fetched);
 			if (placeIdx === -1) {
 				return;
 			}
-      places[placeIdx].fetching = true;
-      vm.places = places;
+			places[placeIdx].fetching = true;
+			vm.places = places;
 			const request = {
 				placeId: places[placeIdx].place_id,
 				fields,
@@ -154,18 +183,18 @@ var Main = {
 			let keyVal = "";
 			rows.push("data:text/csv;charset=utf-8,");
 			rows.push(csvHeaderCols);
-			for (i = 0; i < this.places.length; i++) {
+			for (i = 0; i < this.placeItems.length; i++) {
 				item = [
-					`"${this.places[i].place_id}"`,
-					`"${this.places[i].name}"`,
+					`"${this.placeItems[i].place_id}"`,
+					`"${this.placeItems[i].name}"`,
 					`"${
-						this.places[i].details && this.places[i].details["Address"]
-							? this.places[i].details["Address"]
+						this.placeItems[i].details && this.placeItems[i].details["Address"]
+							? this.placeItems[i].details["Address"]
 							: ""
 					}"`,
 					`"${
-						this.places[i].details && this.places[i].details["Website"]
-							? this.places[i].details["Website"]
+						this.placeItems[i].details && this.placeItems[i].details["Website"]
+							? this.placeItems[i].details["Website"]
 							: ""
 					}"`,
 				];
