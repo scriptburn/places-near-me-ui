@@ -1,5 +1,5 @@
 const base_url = document.location.origin + document.location.pathname;
-onst API_KEY = "<your google map api key>"; d
+const API_KEY = "<your google map api key>";
 const CALLBACK_NAME = "gmapsCallback";
 
 let initialized = !!window.google;
